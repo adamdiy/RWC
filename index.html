@@ -1,0 +1,105 @@
+<body>
+    <script>
+        var dataToWin, dataSecond, dataThird, mergedData;
+        masterData = {};
+        var totalPot = 90;
+
+        var urlWin = "https://api.import.io/store/data/d85e0521-692b-45b2-b704-49cec8306089/_query?input/webpage/url=http%3A%2F%2Fwww.oddschecker.com%2Frugby-union%2Frugby-world-cup%2Fwinner&_user=57b419dc-3972-4c11-ba64-3d8c2a57ff84&_apikey=57b419dc39724c11ba643d8c2a57ff84e05f611197e9e0586db9f51ceefd3fc37701c3a6d58b99f63260747137e19007244005b831dc2db44550cfb8d55b869cdbcaffebadb7308154101db2dbd37d4c";
+        var urlSecond = "https://api.import.io/store/data/6069389b-7017-44b5-aa0c-af39a24190fb/_query?input/webpage/url=http%3A%2F%2Fwww.oddschecker.com%2Frugby-union%2Frugby-world-cup%2Fto-reach-final&_user=57b419dc-3972-4c11-ba64-3d8c2a57ff84&_apikey=57b419dc39724c11ba643d8c2a57ff84e05f611197e9e0586db9f51ceefd3fc37701c3a6d58b99f63260747137e19007244005b831dc2db44550cfb8d55b869cdbcaffebadb7308154101db2dbd37d4c";
+        var urlThird = "https://api.import.io/store/data/69b832ba-efea-4798-9108-2db0e7879271/_query?input/webpage/url=http%3A%2F%2Fwww.oddschecker.com%2Frugby-union%2Frugby-world-cup%2Fto-finish-3rd&_user=57b419dc-3972-4c11-ba64-3d8c2a57ff84&_apikey=57b419dc39724c11ba643d8c2a57ff84e05f611197e9e0586db9f51ceefd3fc37701c3a6d58b99f63260747137e19007244005b831dc2db44550cfb8d55b869cdbcaffebadb7308154101db2dbd37d4c";
+
+        function collectData(url1) {
+            $.ajax({
+                url: url1,
+                type: 'GET',
+                success: function(data) {
+                    arr = data.results;
+                    //$.extend(true, {}, arr, mergedData);
+                    mergedData = arr.concat(mergedData);
+
+                    if (mergedData.length > 45) {
+                        mergedData.pop();
+                        $.each(mergedData, function(index, value) {
+                            //console.log(index +':' + JSON.stringify(value));
+                            $.each(mergedData[index], function(key, val) {
+                                if (key !== 'country') {
+                                    if (!masterData[mergedData[index].country]) {
+                                        masterData[mergedData[index].country] = {};
+                                    }
+                                    masterData[mergedData[index].country][key] = 1/(1+eval(val));
+                                };
+                            })
+
+                        })
+                        cleanupData();
+                        printData();
+                    }
+
+                }
+
+            })
+        }
+
+        dataToWin = collectData(urlWin);
+        dataSecond = collectData(urlSecond);
+        dataThird = collectData(urlThird);
+
+
+        function cleanupData() {
+
+
+        }
+
+
+        function printData() {
+            var out = "<table>";
+        
+        out += "<tr><th>Country</th><th>Bid</th><th>Ask</th></tr>";
+
+            for (var key in masterData) {
+                if (masterData.hasOwnProperty(key)) {
+                    var obj = masterData[key];
+                    out += "<tr><td>" + key;
+                    var fairValue = 0;
+                    fairValue += parseInt(totalPot * 0.5* masterData[key].coraltowin + ((masterData[key].coraltoreachfinal-masterData[key].coraltowin)*0.3* totalPot) + totalPot * (0.2* masterData[key].coraltoplacethird));
+        
+        var bidValue = parseInt(0.9*fairValue);
+        var askValue = parseInt(1.1*fairValue);
+        if (askValue < 1) askValue = 1;
+        
+                         out += "</td><td>" + bidValue + '</td><td>' + askValue + "</td></tr>";
+
+                }
+            }
+
+
+            out += "</table>";
+            document.getElementById("id01").innerHTML = out;
+
+
+        }
+
+
+        function myFunction(response) {
+
+            var arr = JSON.parse(response);
+            var arr = arr.results;
+            var i;
+            var out = "<table>";
+
+            for (i = 0; i < arr.length; i++) {
+                out += "<tr><td>" + arr[i].country +
+                    "</td><td>" + (arr[i].coraltowin) +
+                    "</td><td>";
+
+            }
+            out += "</table>";
+            document.getElementById("id01").innerHTML = out;
+        }
+    </script>
+    
+<h1>RWC 2015</h1>
+
+    <div id="id01"></div>
+        <br>adam.hogge@viagogo.com
+</body>
